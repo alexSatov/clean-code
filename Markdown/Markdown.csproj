@@ -47,8 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Md.cs" />
+    <Compile Include="Markers\EmMarker.cs" />
+    <Compile Include="HTML\HtmlWrapper.cs" />
+    <Compile Include="Markers\IMarker.cs" />
+    <Compile Include="MD\MarkdownProcessor.cs" />
+    <Compile Include="MD\Md.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Markers\StrongMarker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -56,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
