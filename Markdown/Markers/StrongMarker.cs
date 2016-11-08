@@ -1,27 +1,13 @@
-﻿using System.Text;
-
-namespace Markdown.Markers
+﻿namespace Markdown.Markers
 {
-    public class StrongMarker : IMarker
+    public class StrongMarker : Marker
     {
-        public string Form { get; }
-        public StringBuilder Field { get; }
+        public override string Form => "__";
         public static StrongMarker Marker = new StrongMarker();
 
-        public void ProcessSymbol(char symbol)
+        public override void ProcessSymbol(char symbol)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public string GetField()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private StrongMarker()
-        {
-            Form = "__";
-            Field = new StringBuilder();
+            return;
         }
     }
 }

@@ -7,11 +7,11 @@ namespace Markdown.MD
 {
     public class MarkdownProcessor
     {
-        public IMarker[] Markers { get; }
-        private IMarker currentMarker { get; set; }
+        public Marker[] Markers { get; }
+        private Marker currentMarker { get; set; }
         private StringBuilder result { get; }
 
-        public MarkdownProcessor(IEnumerable<IMarker> markers)
+        public MarkdownProcessor(IEnumerable<Marker> markers)
         {
             Markers = markers.ToArray();
             currentMarker = null;

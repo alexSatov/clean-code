@@ -11,9 +11,9 @@ namespace Markdown.MD
             return processor.Process(markdown);
 		}
 
-	    public IMarker[] GetMarkers()
+	    public Marker[] GetMarkers()
 	    {
-            return new IMarker[] { EmMarker.Marker, StrongMarker.Marker };
+            return new Marker[] { EmMarker.Marker, StrongMarker.Marker };
         }
 	}
 }

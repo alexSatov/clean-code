@@ -49,7 +49,7 @@
   <ItemGroup>
     <Compile Include="Markers\EmMarker.cs" />
     <Compile Include="HTML\HtmlWrapper.cs" />
-    <Compile Include="Markers\IMarker.cs" />
+    <Compile Include="Markers\Marker.cs" />
     <Compile Include="MD\MarkdownProcessor.cs" />
     <Compile Include="MD\Md.cs" />
     <Compile Include="Program.cs" />
