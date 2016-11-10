@@ -1,13 +1,23 @@
-﻿namespace Markdown.Markers
+﻿using Markdown.MD;
+using Markdown.HTML;
+
+namespace Markdown.Markers
 {
     public class StrongMarkerProcessor : MarkerProcessor
     {
         public override string Marker => "__";
-        public static StrongMarkerProcessor MarkerProcessor = new StrongMarkerProcessor();
+        private StringProcessor subProcessor { get; set; }
 
         public override void ProcessSymbol(char symbol)
         {
-            return;
+            FieldBuilder.Append(symbol);
+            subProcessor = new StringProcessor(new [] { new EmMarkerProcessor() });
+        }
+
+        public override string GetCompletedField()
+        {
+            var initialField = HtmlWrapper.WrapToHtmlTag(base.GetCompletedField(), "<strong>");
+            return subProcessor.Process(initialField);
         }
     }
 }

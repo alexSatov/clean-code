@@ -7,13 +7,13 @@ namespace Markdown.MD
 		public string RenderToHtml(string markdown)
 		{
 		    var markerProcessors = GetMarkerProcessors();
-            var processor = new MarkdownProcessor(markerProcessors);
+            var processor = new StringProcessor(markerProcessors);
             return processor.Process(markdown);
 		}
 
 	    public MarkerProcessor[] GetMarkerProcessors()
 	    {
-            return new MarkerProcessor[] { EmMarkerProcessor.MarkerProcessor, StrongMarkerProcessor.MarkerProcessor };
+            return new MarkerProcessor[] { new EmMarkerProcessor(), new StrongMarkerProcessor()};
         }
 	}
 }
