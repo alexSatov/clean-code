@@ -1,4 +1,5 @@
 ﻿using Markdown.MD;
+using System.Text;
 using NUnit.Framework;
 using System.Diagnostics;
 
@@ -42,27 +43,30 @@ namespace Markdown.Tests
         {
             var textPart = " _Часть_ __какого-нибудь__ __ _текста_ __";
 
-            var firstText = "";
-            for (var i = 0; i < 2500; i++)
-                firstText += textPart;
+            var firstText = CreateStringFromPart(textPart, 2500);
+            var secondText = CreateStringFromPart(textPart, 10000);
 
-            var secondText = "";
-            for (var i = 0; i < 10000; i++)
-                secondText += textPart;
-
-            var watch = new Stopwatch();
-
-            watch.Start();
-            markdownProcessor.RenderToHtml(firstText);
-            watch.Stop();
-            var firstTime = watch.ElapsedMilliseconds;
-
-            watch.Restart();
-            markdownProcessor.RenderToHtml(secondText);
-            watch.Stop();
-            var secondTime = watch.ElapsedMilliseconds;
+            var firstTime = GetRenderingTimeInMilliseconds(firstText);
+            var secondTime = GetRenderingTimeInMilliseconds(secondText);
 
             Assert.IsTrue(secondTime / firstTime <= 4);
+        }
+
+        private string CreateStringFromPart(string part, int countOfParts)
+        {
+            var stringBuilder = new StringBuilder();
+            for (var i = 0; i < countOfParts; i++)
+                stringBuilder.Append(part);
+            return stringBuilder.ToString();
+        }
+
+        private long GetRenderingTimeInMilliseconds(string text)
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            markdownProcessor.RenderToHtml(text);
+            watch.Stop();
+            return watch.ElapsedMilliseconds;
         }
     }
 }

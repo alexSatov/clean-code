@@ -6,81 +6,74 @@ namespace Markdown.MD
 {
     public class StringProcessor
     {
-        public MarkerProcessor[] MarkerProcessors { get; }
+        private string cache = "";
+        private int currentCharIndex;
+        private BaseMarkerProcessor currentMarkerProcessor;
+        private readonly BaseMarkerProcessor[] markerProcessors;
+        private readonly StringBuilder result = new StringBuilder();
 
-        private string cache { get; set; }
-        private StringBuilder result { get; set; }
-        private bool isCanReadMarker { get; set; }
-        private MarkerProcessor currentMarkerProcessor { get; set; }
-        private int currentCharIndex { get; set; }
-
-        public StringProcessor(MarkerProcessor marker)
+        public StringProcessor(BaseMarkerProcessor marker)
         {
-            MarkerProcessors = new [] { marker };
-            Initialization();
+            markerProcessors = new [] { marker };
         }
 
-        public StringProcessor(MarkerProcessor[] markers)
+        public StringProcessor(BaseMarkerProcessor[] markers)
         {
-            MarkerProcessors = markers;
-            Initialization();
+            markerProcessors = markers;
         }
 
         public string Process(string inputString)
         {
-            for (; currentCharIndex < inputString.Length; currentCharIndex++)
+            while (currentCharIndex < inputString.Length)
             {
                 var symbol = inputString[currentCharIndex];
-                bool needToContinue;
-
-                CheckOnEscapeSymbol(symbol, inputString, out needToContinue);
-                if (needToContinue) continue;
-
-                if (currentMarkerProcessor == null)
-                {
-                    if (CheckOnMarkerSymbol(symbol)) continue;
-                    ProcessSymbol(symbol);
-                }
-                else
-                {
-                    TryCloseMarker(symbol, inputString, out needToContinue);
-                    if (needToContinue) continue;
-                    currentMarkerProcessor.ProcessSymbol(symbol);
-                }
+                ProcessNextSymbol(symbol, inputString);
+                currentCharIndex++;
             }
             return GetProcessedString();
         }
 
-        private void Initialization()
+        private void ProcessNextSymbol(char symbol, string inputString)
         {
-            cache = "";
-            currentCharIndex = 0;
-            isCanReadMarker = true;
-            result = new StringBuilder();
-            currentMarkerProcessor = null;
+            bool shouldProcessNext;
+
+            TryProcessEscapeSymbol(symbol, inputString, out shouldProcessNext);
+            if (shouldProcessNext) return;
+
+            if (currentMarkerProcessor == null)
+            {
+                if (TryProcessMarkerSymbol(symbol)) return;
+                ProcessSymbol(symbol);
+            }
+            else
+            {
+                TryCloseMarker(symbol, inputString, out shouldProcessNext);
+                if (shouldProcessNext) return;
+                currentMarkerProcessor.ProcessSymbol(symbol);
+            }
         }
 
-        private void CheckOnEscapeSymbol(char symbol, string inputString, out bool needToContinue)
+        private void TryProcessEscapeSymbol(char symbol, string inputString, out bool shouldProcessNext)
         {
             if (symbol == '\\')
             {
                 currentCharIndex++;
                 result.Append(inputString[currentCharIndex]);
-                needToContinue = true;
+                shouldProcessNext = true;
             }
             else
-                needToContinue = false;
+                shouldProcessNext = false;
         }
 
-        private void TryCloseMarker(char symbol, string inputString, out bool needToContinue)
+        private void TryCloseMarker(char symbol, string inputString, out bool shouldProcessNext)
         {
             if (currentMarkerProcessor.CheckOnCloseMarker(symbol, currentCharIndex == inputString.Length - 1))
             {
                 AddRenderedField(symbol);
-                needToContinue = true;
+                shouldProcessNext = true;
             }
             else
-                needToContinue = false;
+                shouldProcessNext = false;
         }
 
         private void AddRenderedField(char symbol)
@@ -92,12 +85,11 @@ namespace Markdown.MD
 
         private void Clear()
         {
+            cache = "";
             result.Clear();
             currentCharIndex = 0;
-            isCanReadMarker = true;
             currentMarkerProcessor?.Clear();
             currentMarkerProcessor = null;
-            
         }
 
         private string GetProcessedString()
@@ -108,7 +100,7 @@ namespace Markdown.MD
             return processedString;
         }
 
-        private bool CheckOnMarkerSymbol(char symbol)
+        private bool TryProcessMarkerSymbol(char symbol)
         {
             if (!IsMarkerSymbol(symbol)) return false;
             cache += symbol;
@@ -118,7 +110,7 @@ namespace Markdown.MD
         private bool IsMarkerSymbol(char symbol)
         {
             var prevSymbol = result.Length > 0 ? result[result.Length - 1] : '-';
-            return MarkerProcessors.Any(mp => mp.Marker.StartsWith(symbol.ToString())) &&
+            return markerProcessors.Any(mp => mp.Marker.StartsWith(symbol.ToString())) &&
                    prevSymbol == ' ';
         }
 
@@ -144,7 +136,7 @@ namespace Markdown.MD
 
         private void TryStartMarkerProcessing(char symbol)
         {
-            currentMarkerProcessor = MarkerProcessors.FirstOrDefault(mp => mp.Marker == cache.ToString());
+            currentMarkerProcessor = markerProcessors.FirstOrDefault(mp => mp.Marker == cache.ToString());
             cache = currentMarkerProcessor == null ? cache : "";
             currentMarkerProcessor?.ProcessSymbol(symbol);
         }

@@ -4,7 +4,7 @@ namespace Markdown.MD
 {
 	public class Md
 	{
-        private StringProcessor processor { get; }
+	    private readonly StringProcessor processor;
 
 	    public Md()
 	    {
@@ -17,10 +17,10 @@ namespace Markdown.MD
             return processor.Process(text);
 		}
 
-	    public MarkerProcessor[] GetMarkerProcessors()
+	    public BaseMarkerProcessor[] GetMarkerProcessors()
 	    {
-            return new MarkerProcessor[] { new EmMarkerProcessor(),
-                new StrongMarkerProcessor(new [] { new StringProcessor(new EmMarkerProcessor()) }) };
+            return new BaseMarkerProcessor[] { new EmMarkerProcessor(),
+                new StrongMarkerProcessor(new StringProcessor(new EmMarkerProcessor())) };
         }
 	}
 }

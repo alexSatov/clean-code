@@ -3,19 +3,21 @@ using Markdown.HTML;
 
 namespace Markdown.Markers
 {
-    public class EmMarkerProcessor : MarkerProcessor
+    public class EmMarkerProcessor : BaseMarkerProcessor
     {
         public override string Marker => "_";
 
-        public EmMarkerProcessor(StringProcessor[] subProcessors = null)
+        public EmMarkerProcessor(StringProcessor[] subProcessors)
         {
             SubProcessors = subProcessors;
         }
 
-        public override void ProcessSymbol(char symbol)
+        public EmMarkerProcessor(StringProcessor subProcessor)
         {
-            FieldBuilder.Append(symbol);
+            SubProcessors = new [] { subProcessor };
         }
+
+        public EmMarkerProcessor() { }
 
         public override string GetCompletedField()
         {

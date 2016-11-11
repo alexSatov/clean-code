@@ -4,17 +4,20 @@ using Markdown.MD;
 
 namespace Markdown.Markers
 {
-    public abstract class MarkerProcessor
+    public abstract class BaseMarkerProcessor
     {
         public abstract string Marker { get; }
         public string CurrentField => FieldBuilder.ToString();
 
         protected StringBuilder FieldBuilder = new StringBuilder();
-        protected StringProcessor[] SubProcessors { get; set; }
+        protected StringProcessor[] SubProcessors;
 
         private string cache = "";
 
-        public abstract void ProcessSymbol(char symbol);
+        public virtual void ProcessSymbol(char symbol)
+        {
+            FieldBuilder.Append(symbol);
+        }
 
         public virtual string GetCompletedField()
         {
