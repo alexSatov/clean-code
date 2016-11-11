@@ -1,5 +1,6 @@
 ﻿using Markdown.MD;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace Markdown.Tests
 {
@@ -34,6 +35,34 @@ namespace Markdown.Tests
         public string ProcessText(string text)
         {
             return markdownProcessor.RenderToHtml(text);
+        }
+
+        [Test]
+        public void Render_ForLinearTime()
+        {
+            var textPart = " _Часть_ __какого-нибудь__ __ _текста_ __";
+
+            var firstText = "";
+            for (var i = 0; i < 2500; i++)
+                firstText += textPart;
+
+            var secondText = "";
+            for (var i = 0; i < 10000; i++)
+                secondText += textPart;
+
+            var watch = new Stopwatch();
+
+            watch.Start();
+            markdownProcessor.RenderToHtml(firstText);
+            watch.Stop();
+            var firstTime = watch.ElapsedMilliseconds;
+
+            watch.Restart();
+            markdownProcessor.RenderToHtml(secondText);
+            watch.Stop();
+            var secondTime = watch.ElapsedMilliseconds;
+
+            Assert.IsTrue(secondTime / firstTime <= 4);
         }
     }
 }

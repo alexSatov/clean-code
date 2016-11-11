@@ -4,16 +4,23 @@ namespace Markdown.MD
 {
 	public class Md
 	{
-		public string RenderToHtml(string markdown)
+        private StringProcessor processor { get; }
+
+	    public Md()
+	    {
+            var markerProcessors = GetMarkerProcessors();
+            processor = new StringProcessor(markerProcessors);
+        }
+
+        public string RenderToHtml(string text)
 		{
-		    var markerProcessors = GetMarkerProcessors();
-            var processor = new StringProcessor(markerProcessors);
-            return processor.Process(markdown);
+            return processor.Process(text);
 		}
 
 	    public MarkerProcessor[] GetMarkerProcessors()
 	    {
-            return new MarkerProcessor[] { new EmMarkerProcessor(), new StrongMarkerProcessor()};
+            return new MarkerProcessor[] { new EmMarkerProcessor(),
+                new StrongMarkerProcessor(new [] { new StringProcessor(new EmMarkerProcessor()) }) };
         }
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
 using Markdown.Markers;
-using System.Collections.Generic;
 
 namespace Markdown.MD
 {
@@ -10,31 +9,32 @@ namespace Markdown.MD
         public MarkerProcessor[] MarkerProcessors { get; }
 
         private string cache { get; set; }
-        private StringBuilder result { get; }
+        private StringBuilder result { get; set; }
         private bool isCanReadMarker { get; set; }
         private MarkerProcessor currentMarkerProcessor { get; set; }
+        private int currentCharIndex { get; set; }
 
-        public StringProcessor(IEnumerable<MarkerProcessor> markers)
+        public StringProcessor(MarkerProcessor marker)
         {
-            cache = "";
-            isCanReadMarker = true;
-            result = new StringBuilder();
-            currentMarkerProcessor = null;
-            MarkerProcessors = markers.ToArray();
+            MarkerProcessors = new [] { marker };
+            Initialization();
+        }
+
+        public StringProcessor(MarkerProcessor[] markers)
+        {
+            MarkerProcessors = markers;
+            Initialization();
         }
 
         public string Process(string inputString)
         {
-            for (var i = 0; i < inputString.Length; i++)
+            for (; currentCharIndex < inputString.Length; currentCharIndex++)
             {
-                var symbol = inputString[i];
+                var symbol = inputString[currentCharIndex];
+                bool needToContinue;
 
-                if (symbol == '\\')
-                {
-                    i++;
-                    result.Append(inputString[i]);
-                    continue;
-                }
+                CheckOnEscapeSymbol(symbol, inputString, out needToContinue);
+                if (needToContinue) continue;
 
                 if (currentMarkerProcessor == null)
                 {
@@ -43,15 +43,44 @@ namespace Markdown.MD
                 }
                 else
                 {
-                    if (currentMarkerProcessor.CheckOnCloseMarker(symbol, i == inputString.Length - 1))
-                    {
-                        AddRenderedField(symbol);
-                        continue;
-                    }
+                    TryCloseMarker(symbol, inputString, out needToContinue);
+                    if (needToContinue) continue;
                     currentMarkerProcessor.ProcessSymbol(symbol);
                 }
             }
             return GetProcessedString();
+        }
+
+        private void Initialization()
+        {
+            cache = "";
+            currentCharIndex = 0;
+            isCanReadMarker = true;
+            result = new StringBuilder();
+            currentMarkerProcessor = null;
+        }
+
+        private void CheckOnEscapeSymbol(char symbol, string inputString, out bool needToContinue)
+        {
+            if (symbol == '\\')
+            {
+                currentCharIndex++;
+                result.Append(inputString[currentCharIndex]);
+                needToContinue = true;
+            }
+            else
+                needToContinue = false;
+        }
+
+        private void TryCloseMarker(char symbol, string inputString, out bool needToContinue)
+        {
+            if (currentMarkerProcessor.CheckOnCloseMarker(symbol, currentCharIndex == inputString.Length - 1))
+            {
+                AddRenderedField(symbol);
+                needToContinue = true;
+            }
+            else
+                needToContinue = false;
         }
 
         private void AddRenderedField(char symbol)
@@ -61,12 +90,21 @@ namespace Markdown.MD
             currentMarkerProcessor = null;
         }
 
+        private void Clear()
+        {
+            result.Clear();
+            currentCharIndex = 0;
+            isCanReadMarker = true;
+            currentMarkerProcessor?.Clear();
+            currentMarkerProcessor = null;
+            
+        }
+
         private string GetProcessedString()
         {
             result.Append(currentMarkerProcessor?.Marker + currentMarkerProcessor?.CurrentField);
-            currentMarkerProcessor?.GetCompletedField();
             var processedString = result.ToString();
-            result.Clear();
+            Clear();
             return processedString;
         }
 

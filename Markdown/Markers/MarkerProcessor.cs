@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
+using Markdown.MD;
 
 namespace Markdown.Markers
 {
@@ -7,7 +9,9 @@ namespace Markdown.Markers
         public abstract string Marker { get; }
         public string CurrentField => FieldBuilder.ToString();
 
-        protected readonly StringBuilder FieldBuilder = new StringBuilder();
+        protected StringBuilder FieldBuilder = new StringBuilder();
+        protected StringProcessor[] SubProcessors { get; set; }
+
         private string cache = "";
 
         public abstract void ProcessSymbol(char symbol);
@@ -16,7 +20,11 @@ namespace Markdown.Markers
         {
             FieldBuilder.Remove(FieldBuilder.Length - Marker.Length, Marker.Length);
             var field = CurrentField;
-            FieldBuilder.Clear();
+
+            if (SubProcessors != null)
+                field = SubProcessors.Aggregate(field, (current, subProcessor) => subProcessor.Process(current));
+
+            Clear();
             return field;
         }
 
@@ -38,6 +46,12 @@ namespace Markdown.Markers
 
             cache = "";
             return false;
+        }
+
+        public void Clear()
+        {
+            FieldBuilder.Clear();
+            cache = "";
         }
 
         private bool IsMarkerSymbol(char symbol)
