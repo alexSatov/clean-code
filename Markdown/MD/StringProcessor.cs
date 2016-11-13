@@ -27,53 +27,48 @@ namespace Markdown.MD
             while (currentCharIndex < inputString.Length)
             {
                 var symbol = inputString[currentCharIndex];
-                ProcessNextSymbol(symbol, inputString);
+                ProcessSymbol(symbol, inputString);
                 currentCharIndex++;
             }
             return GetProcessedString();
         }
 
-        private void ProcessNextSymbol(char symbol, string inputString)
-        {
-            bool shouldProcessNext;
-
-            TryProcessEscapeSymbol(symbol, inputString, out shouldProcessNext);
-            if (shouldProcessNext) return;
-
-            if (currentMarkerProcessor == null)
-            {
-                if (TryProcessMarkerSymbol(symbol)) return;
-                ProcessSymbol(symbol);
-            }
-            else
-            {
-                TryCloseMarker(symbol, inputString, out shouldProcessNext);
-                if (shouldProcessNext) return;
-                currentMarkerProcessor.ProcessSymbol(symbol);
-            }
-        }
-
-        private void TryProcessEscapeSymbol(char symbol, string inputString, out bool shouldProcessNext)
+        private void ProcessSymbol(char symbol, string inputString)
         {
             if (symbol == '\\')
-            {
-                currentCharIndex++;
-                result.Append(inputString[currentCharIndex]);
-                shouldProcessNext = true;
-            }
+                ProcessEscapeSymbol(symbol, inputString);
+            else if (currentMarkerProcessor == null)
+                SelfProcessing(symbol);
             else
-                shouldProcessNext = false;
+                MarkerProcessing(symbol, inputString);
         }
 
-        private void TryCloseMarker(char symbol, string inputString, out bool shouldProcessNext)
+        private void MarkerProcessing(char symbol, string inputString)
+        {
+            if (CloseMarkerCollected(symbol, inputString)) return;
+            currentMarkerProcessor.ProcessSymbol(symbol);
+        }
+
+        private void SelfProcessing(char symbol)
+        {
+            if (OpenMarkerCollected(symbol)) return;
+            ProcessSymbolDependingOnCache(symbol);
+        }
+
+        private void ProcessEscapeSymbol(char symbol, string inputString)
+        {
+            currentCharIndex++;
+            result.Append(inputString[currentCharIndex]);
+        }
+
+        private bool CloseMarkerCollected(char symbol, string inputString)
         {
             if (currentMarkerProcessor.CheckOnCloseMarker(symbol, currentCharIndex == inputString.Length - 1))
             {
                 AddRenderedField(symbol);
-                shouldProcessNext = true;
+                return true;
             }
-            else
-                shouldProcessNext = false;
+            return false;
         }
 
         private void AddRenderedField(char symbol)
@@ -100,7 +95,7 @@ namespace Markdown.MD
             return processedString;
         }
 
-        private bool TryProcessMarkerSymbol(char symbol)
+        private bool OpenMarkerCollected(char symbol)
         {
             if (!IsMarkerSymbol(symbol)) return false;
             cache += symbol;
@@ -114,7 +109,7 @@ namespace Markdown.MD
                    prevSymbol == ' ';
         }
 
-        private void ProcessSymbol(char symbol)
+        private void ProcessSymbolDependingOnCache(char symbol)
         {
             if (cache == "")
                 result.Append(symbol);
