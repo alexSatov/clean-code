@@ -13,6 +13,7 @@ namespace Markdown.Markers
         protected StringProcessor[] SubProcessors;
 
         private string cache = "";
+        private char[] separators = new[] { ' ', '\t' };
 
         public virtual void ProcessSymbol(char symbol)
         {
@@ -59,13 +60,13 @@ namespace Markdown.Markers
 
         private bool IsMarkerSymbol(char symbol)
         {
-            var prevSymbol = FieldBuilder.Length > 0 ? FieldBuilder[FieldBuilder.Length - 1] : '-';
-            return Marker.StartsWith(symbol.ToString()) && prevSymbol != ' ';
+            var prevSymbol = FieldBuilder.Length > 0 ? FieldBuilder[FieldBuilder.Length - 1] : ' ';
+            return Marker.StartsWith(symbol.ToString()) && !separators.Contains(prevSymbol);
         }
 
         private bool IsCompleteCloseMarker(char symbol, bool isLastSymbol)
         {
-            return (symbol == ' ' || isLastSymbol) && Marker == cache;
+            return (separators.Contains(symbol) || isLastSymbol) && Marker == cache;
         }
     }
 }

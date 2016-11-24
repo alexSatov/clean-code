@@ -11,6 +11,7 @@ namespace Markdown.MD
         private BaseMarkerProcessor currentMarkerProcessor;
         private readonly BaseMarkerProcessor[] markerProcessors;
         private readonly StringBuilder result = new StringBuilder();
+        private char[] separators = new[] {' ', '\t'};
 
         public StringProcessor(BaseMarkerProcessor marker)
         {
@@ -74,7 +75,7 @@ namespace Markdown.MD
         private void AddRenderedField(char symbol)
         {
             result.Append(currentMarkerProcessor.GetCompletedField());
-            result.Append(symbol == ' ' ? " " : "");
+            result.Append(separators.Contains(symbol) ? symbol.ToString() : "");
             currentMarkerProcessor = null;
         }
 
@@ -104,9 +105,9 @@ namespace Markdown.MD
 
         private bool IsMarkerSymbol(char symbol)
         {
-            var prevSymbol = result.Length > 0 ? result[result.Length - 1] : '-';
+            var prevSymbol = result.Length > 0 ? result[result.Length - 1] : ' ';
             return markerProcessors.Any(mp => mp.Marker.StartsWith(symbol.ToString())) &&
-                   prevSymbol == ' ';
+                   separators.Contains(prevSymbol);
         }
 
         private void ProcessSymbolDependingOnCache(char symbol)
@@ -115,17 +116,17 @@ namespace Markdown.MD
                 result.Append(symbol);
             else
             {
-                if (symbol == ' ')
-                    SetTextFromCacheToResult();
+                if (separators.Contains(symbol))
+                    SetTextFromCacheToResult(symbol);
                 else
                     TryStartMarkerProcessing(symbol);
             }
         }
 
-        private void SetTextFromCacheToResult()
+        private void SetTextFromCacheToResult(char symbol)
         {
             result.Append(cache);
-            result.Append(" ");
+            result.Append(symbol.ToString());
             cache = "";
         }
 
