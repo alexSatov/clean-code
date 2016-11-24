@@ -5,7 +5,9 @@ namespace Markdown.Markers
 {
     public class StrongMarkerProcessor : BaseMarkerProcessor
     {
-        public override string Marker => "__";
+        public override string OpenMarker => "__";
+        public override string CloseMarker => "__";
+        public string CssClass = "";
 
         public StrongMarkerProcessor(StringProcessor[] subProcessors)
         {
@@ -21,7 +23,7 @@ namespace Markdown.Markers
 
         public override string GetCompletedField()
         {
-            return HtmlWrapper.WrapToHtmlTag(base.GetCompletedField(), "<strong>");
+            return HtmlWrapper.WrapToHtmlTag(base.GetCompletedField(), "<strong>", CssClass);
         }
     }
 }

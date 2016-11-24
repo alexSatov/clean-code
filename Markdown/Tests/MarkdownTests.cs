@@ -8,7 +8,8 @@ namespace Markdown.Tests
     [TestFixture]
     public class Markdown_Should
     {
-        private readonly Md markdownProcessor = new Md();
+        private readonly Md markdownProcessor = new Md("http://example.net/");
+        private readonly Md mdProcessorWithCssClass = new Md("", "example");
 
         [TestCase("Текст без маркеров", ExpectedResult = "Текст без маркеров", TestName = "TextWithoutMarkers")]
         [TestCase("Текст с одним _подчерком", ExpectedResult = "Текст с одним _подчерком", TestName = "TextWithOpenMarkerSymbol")]
@@ -20,22 +21,38 @@ namespace Markdown.Tests
         [TestCase("Маркеры __ без _  _ текста __  __ не работают", ExpectedResult = "Маркеры __ без _  _ текста __  __ не работают", TestName = "MarkersWithoutText")]
         [TestCase("__Непарные символы_ не являются маркером", ExpectedResult = "__Непарные символы_ не являются маркером", TestName = "TextWithUnPairSymbols")]
         [TestCase(@"\_Экранирование\_", ExpectedResult = "_Экранирование_", TestName = "TextWithEscapeCharacters")]
-
         [TestCase("Внутри __двойного выделения _одинарное_ тоже__ работает",
             ExpectedResult = "Внутри <strong>двойного выделения <em>одинарное</em> тоже</strong> работает",
             TestName = "TextWithEmMarkerInsideStrongMarker")]
-
         [TestCase("Внутри _одинарного выделения __двойное__ не_ работает",
             ExpectedResult = "Внутри <em>одинарного выделения __двойное__ не</em> работает",
             TestName = "TextWithStrongMarkerInsideEmMarker")]
-
         [TestCase("_ Маркер с пробелом_ после открывающего символа __и до закрывающего __ не работает",
             ExpectedResult = "_ Маркер с пробелом_ после открывающего символа __и до закрывающего __ не работает",
             TestName = "WhitespacesAfterOrBeforeMarkerSymbols")]
 
+        [TestCase("\t_Табуляция_", ExpectedResult = "\t<em>Табуляция</em>", TestName = "TextTabulation")]
+        [TestCase("_Верная_\tтабуляция", ExpectedResult = "<em>Верная</em>\tтабуляция", TestName = "TextCorrectTabulation")]
+        [TestCase("_\tМаркер с табуляцией внутри\t_ не работает", ExpectedResult = "_\tМаркер с табуляцией внутри\t_ не работает", TestName = "TabulationInsideMarker")]
+
+        [TestCase("Рабочая [ссылка](http://example.net/)", ExpectedResult = "Рабочая <a href=\"http://example.net/\">ссылка</a>", TestName = "CorrectUrl")]
+        [TestCase("Рабочая [ссылка  ]\t(http://example.net/)   с разделителями", ExpectedResult = "Рабочая <a href=\"http://example.net/\">ссылка  </a>   с разделителями", TestName = "UrlWithCorrectSeparatorsProcessing")]
+        [TestCase("Относительная [ссылка](/about/)", ExpectedResult = "Относительная <a href=\"http://example.net//about/\">ссылка</a>", TestName = "RelativeUrl")]
+        [TestCase("Некорректная [ссылка]() _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [ссылка]() <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl1")]
+        [TestCase("Некорректная [](http://example.net/) _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [](http://example.net/) <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl2")]
+        [TestCase("Некорректная [ссылка] http://example.net/ _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [ссылка] http://example.net/ <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl3")]
+        [TestCase("Некорректная [ссылка http://example.net/) _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [ссылка http://example.net/) <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl4")]
         public string ProcessText(string text)
         {
             return markdownProcessor.RenderToHtml(text);
+        }
+
+        [TestCase("_Курсив с css классом_", ExpectedResult = "<em class=\"example\">Курсив с css классом</em>", TestName = "CssInEmMarker")]
+        [TestCase("__Жирный с css классом__", ExpectedResult = "<strong class=\"example\">Жирный с css классом</strong>", TestName = "CssInStrongMarker")]
+        [TestCase("[Ссылка](http://example.net/) с css классом", ExpectedResult = "<a href=\"http://example.net/\" class=\"example\">Ссылка</a> с css классом", TestName = "CssInUrlMarker")]
+        public string AddCssClass_IfClassNotEmpty(string text)
+        {
+            return mdProcessorWithCssClass.RenderToHtml(text);
         }
 
         [Test]
@@ -52,7 +69,7 @@ namespace Markdown.Tests
             Assert.IsTrue(secondTime / firstTime <= 4);
         }
 
-        private string CreateStringFromPart(string part, int countOfParts)
+        private static string CreateStringFromPart(string part, int countOfParts)
         {
             var stringBuilder = new StringBuilder();
             for (var i = 0; i < countOfParts; i++)

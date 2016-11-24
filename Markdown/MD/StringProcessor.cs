@@ -10,11 +10,12 @@ namespace Markdown.MD
         private int currentCharIndex;
         private BaseMarkerProcessor currentMarkerProcessor;
         private readonly BaseMarkerProcessor[] markerProcessors;
+        private readonly char[] separators = { ' ', '\t', '\n' };
         private readonly StringBuilder result = new StringBuilder();
 
         public StringProcessor(BaseMarkerProcessor marker)
         {
-            markerProcessors = new [] { marker };
+            markerProcessors = new[] { marker };
         }
 
         public StringProcessor(BaseMarkerProcessor[] markers)
@@ -36,7 +37,7 @@ namespace Markdown.MD
         private void ProcessSymbol(char symbol, string inputString)
         {
             if (symbol == '\\')
-                ProcessEscapeSymbol(symbol, inputString);
+                ProcessEscapeSymbol(inputString);
             else if (currentMarkerProcessor == null)
                 SelfProcessing(symbol);
             else
@@ -55,7 +56,7 @@ namespace Markdown.MD
             ProcessSymbolDependingOnCache(symbol);
         }
 
-        private void ProcessEscapeSymbol(char symbol, string inputString)
+        private void ProcessEscapeSymbol(string inputString)
         {
             currentCharIndex++;
             result.Append(inputString[currentCharIndex]);
@@ -63,18 +64,16 @@ namespace Markdown.MD
 
         private bool CloseMarkerCollected(char symbol, string inputString)
         {
-            if (currentMarkerProcessor.CheckOnCloseMarker(symbol, currentCharIndex == inputString.Length - 1))
-            {
-                AddRenderedField(symbol);
-                return true;
-            }
-            return false;
+            if (!currentMarkerProcessor.CheckOnCloseMarker(symbol, currentCharIndex == inputString.Length - 1))
+                return false;
+            AddRenderedField(symbol);
+            return true;
         }
 
         private void AddRenderedField(char symbol)
         {
             result.Append(currentMarkerProcessor.GetCompletedField());
-            result.Append(symbol == ' ' ? " " : "");
+            result.Append(separators.Contains(symbol) ? symbol.ToString() : "");
             currentMarkerProcessor = null;
         }
 
@@ -89,7 +88,7 @@ namespace Markdown.MD
 
         private string GetProcessedString()
         {
-            result.Append(currentMarkerProcessor?.Marker + currentMarkerProcessor?.CurrentField);
+            result.Append(currentMarkerProcessor?.OpenMarker + currentMarkerProcessor?.CurrentField);
             var processedString = result.ToString();
             Clear();
             return processedString;
@@ -104,9 +103,9 @@ namespace Markdown.MD
 
         private bool IsMarkerSymbol(char symbol)
         {
-            var prevSymbol = result.Length > 0 ? result[result.Length - 1] : '-';
-            return markerProcessors.Any(mp => mp.Marker.StartsWith(symbol.ToString())) &&
-                   prevSymbol == ' ';
+            var prevSymbol = result.Length > 0 ? result[result.Length - 1] : ' ';
+            return markerProcessors.Any(mp => mp.OpenMarker.StartsWith(symbol.ToString())) &&
+                   separators.Contains(prevSymbol);
         }
 
         private void ProcessSymbolDependingOnCache(char symbol)
@@ -115,23 +114,23 @@ namespace Markdown.MD
                 result.Append(symbol);
             else
             {
-                if (symbol == ' ')
-                    SetTextFromCacheToResult();
+                if (separators.Contains(symbol))
+                    SetTextFromCacheToResult(symbol);
                 else
                     TryStartMarkerProcessing(symbol);
             }
         }
 
-        private void SetTextFromCacheToResult()
+        private void SetTextFromCacheToResult(char symbol)
         {
             result.Append(cache);
-            result.Append(" ");
+            result.Append(symbol.ToString());
             cache = "";
         }
 
         private void TryStartMarkerProcessing(char symbol)
         {
-            currentMarkerProcessor = markerProcessors.FirstOrDefault(mp => mp.Marker == cache.ToString());
+            currentMarkerProcessor = markerProcessors.FirstOrDefault(mp => mp.OpenMarker == cache.ToString());
             cache = currentMarkerProcessor == null ? cache : "";
             currentMarkerProcessor?.ProcessSymbol(symbol);
         }

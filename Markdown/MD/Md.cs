@@ -5,9 +5,13 @@ namespace Markdown.MD
 	public class Md
 	{
 	    private readonly StringProcessor processor;
+	    public string BaseUrl;
+	    public string CssClass;
 
-	    public Md()
-	    {
+        public Md(string baseUrl = "", string cssClass = "")
+        {
+            BaseUrl = baseUrl;
+            CssClass = cssClass;
             var markerProcessors = GetMarkerProcessors();
             processor = new StringProcessor(markerProcessors);
         }
@@ -19,8 +23,11 @@ namespace Markdown.MD
 
 	    public BaseMarkerProcessor[] GetMarkerProcessors()
 	    {
-            return new BaseMarkerProcessor[] { new EmMarkerProcessor(),
-                new StrongMarkerProcessor(new StringProcessor(new EmMarkerProcessor())) };
+            return new BaseMarkerProcessor[] {
+                new UrlMarkerProcessor(BaseUrl) {CssClass = CssClass},
+                new EmMarkerProcessor {CssClass = CssClass},
+                new StrongMarkerProcessor(new StringProcessor(new EmMarkerProcessor {CssClass = CssClass})) {CssClass = CssClass}
+            };
         }
 	}
 }
