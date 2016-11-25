@@ -36,12 +36,15 @@ namespace Markdown.MD
 	    public BaseMarkerProcessor[] GetMarkerProcessors()
 	    {
             return new BaseMarkerProcessor[] {
-                new H1MarkerProcessor(), 
-                new H2MarkerProcessor(), 
-                new H3MarkerProcessor(), 
-                new H4MarkerProcessor(), 
-                new H5MarkerProcessor(), 
-                new H6MarkerProcessor(), 
+                new BulletedListMarkerProcessor('*'), 
+                new BulletedListMarkerProcessor('+'), 
+                new BulletedListMarkerProcessor('-'), 
+                new HeaderMarkerProcessor(1), 
+                new HeaderMarkerProcessor(2), 
+                new HeaderMarkerProcessor(3), 
+                new HeaderMarkerProcessor(4), 
+                new HeaderMarkerProcessor(5), 
+                new HeaderMarkerProcessor(6), 
                 new UrlMarkerProcessor(BaseUrl) {CssClass = CssClass},
                 new EmMarkerProcessor {CssClass = CssClass},
                 new StrongMarkerProcessor(new StringProcessor(new EmMarkerProcessor {CssClass = CssClass})) {CssClass = CssClass}

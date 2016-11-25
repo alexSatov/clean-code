@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Markdown.HTML;
 
 namespace Markdown.Markers
@@ -21,19 +17,16 @@ namespace Markdown.Markers
             BaseUrl = baseUrl;
         }
 
-        public override bool CheckOnCloseMarker(ref char symbol, bool isLastSymbol = false)
+        public override bool CheckOnCloseMarker(char symbol, bool isLastSymbol = false)
         {
             if (linkExpected)
-                if (!Separators.Contains(symbol) && symbol != '(')
-                {
-                    FieldBuilder.Append(symbol);
-                    return true;
-                }
-
+                if (!Separators.Contains(symbol) && symbol != '(') return true;
                 else if (symbol == '(')
                     linkExpected = false;
+
             if (canClose && Separators.Contains(symbol) || symbol.ToString() == CloseMarker && isLastSymbol)
                 return true;
+
             canClose = symbol.ToString() == CloseMarker;
             linkExpected = symbol == ']' || linkExpected;
             return false;

@@ -6,13 +6,13 @@ namespace Markdown.Markers
 {
     public abstract class BaseMarkerProcessor
     {
+        public string CssClass = "";
         public abstract string OpenMarker { get; }
         public abstract string CloseMarker { get; }
         public string CurrentField => FieldBuilder.ToString();
-        public string CssClass = "";
 
-        protected StringBuilder FieldBuilder = new StringBuilder();
         protected StringProcessor[] SubProcessors;
+        protected StringBuilder FieldBuilder = new StringBuilder();
         protected readonly char[] Separators = { ' ', '\t', '\n' };
 
         private string cache = "";
@@ -35,7 +35,7 @@ namespace Markdown.Markers
             return field;
         }
 
-        public virtual bool CheckOnCloseMarker(ref char symbol, bool isLastSymbol = false)
+        public virtual bool CheckOnCloseMarker(char symbol, bool isLastSymbol = false)
         {
             if (IsMarkerSymbol(symbol))
             {

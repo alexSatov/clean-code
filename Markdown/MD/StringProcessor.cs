@@ -64,16 +64,17 @@ namespace Markdown.MD
 
         private bool CloseMarkerCollected(char symbol, string inputString)
         {
-            if (!currentMarkerProcessor.CheckOnCloseMarker(ref symbol, currentCharIndex == inputString.Length - 1))
+            var isLastSymbol = currentCharIndex == inputString.Length - 1;
+            if (!currentMarkerProcessor.CheckOnCloseMarker(symbol, isLastSymbol))
                 return false;
-            AddRenderedField(symbol);
+            AddRenderedField(symbol, isLastSymbol);
             return true;
         }
 
-        private void AddRenderedField(char symbol)
+        private void AddRenderedField(char symbol, bool isLastSymbol)
         {
             result.Append(currentMarkerProcessor.GetCompletedField());
-            result.Append(separators.Contains(symbol) ? symbol.ToString() : "");
+            result.Append(isLastSymbol && !separators.Contains(symbol) ? "" : symbol.ToString());
             currentMarkerProcessor = null;
         }
 
@@ -114,6 +115,11 @@ namespace Markdown.MD
                 result.Append(symbol);
             else
             {
+                if (markerProcessors.Any(mp => mp.OpenMarker == cache + symbol))
+                {
+                    cache += symbol;
+                    return;
+                }
                 if (separators.Contains(symbol))
                     SetTextFromCacheToResult(symbol);
                 else

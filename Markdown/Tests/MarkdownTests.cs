@@ -50,8 +50,15 @@ namespace Markdown.Tests
                                                                                         "параграфов", TestName = "MarkersInsideParagraphs")]
         [TestCase("Параграфы\n\nотделяются\n2 символами переноса строки", ExpectedResult = "<p>Параграфы</p>отделяются\n2 символами переноса строки", TestName = "TwoLineBreakForParagraph")]
 
-        [TestCase("#Заголовок 1\n##Заголовок 2\n###Заголовок 3\n####Заголовок 4\n#####Заголовок 5\n######Заголовок 6", 
+        [TestCase("# Заголовок 1\n## Заголовок 2\n### Заголовок 3\n#### Заголовок 4\n##### Заголовок 5\n###### Заголовок 6",
             ExpectedResult = "<h1>Заголовок 1</h1>\n<h2>Заголовок 2</h2>\n<h3>Заголовок 3</h3>\n<h4>Заголовок 4</h4>\n<h5>Заголовок 5</h5>\n<h6>Заголовок 6</h6>", TestName = "CorrectHeaders")]
+
+        [TestCase("* Red\n* Green\n* Blue", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>", TestName = "BulletedList1")]
+        [TestCase("+ Red\n+ Green\n+ Blue", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>", TestName = "BulletedList2")]
+        [TestCase("- Red\n- Green\n- Blue", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>", TestName = "BulletedList3")]
+        [TestCase("* Red * Green\n* Blue", ExpectedResult = "<ul><li>Red * Green</li><li>Blue</li></ul>", TestName = "MarkerInsideListItem")]
+        [TestCase("* Red\n* Green\n* Blue\n", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>\n", TestName = "BreakLineAtTheEndOfLine")]
+        [TestCase("* Red\n* Green\n* Blue\nEnd of list", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>\nEnd of list", TestName = "TextAtTheEndOfLine")]
         public string ProcessText(string text)
         {
             return markdownProcessor.RenderToHtml(text);
