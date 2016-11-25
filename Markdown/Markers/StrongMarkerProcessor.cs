@@ -7,7 +7,6 @@ namespace Markdown.Markers
     {
         public override string OpenMarker => "__";
         public override string CloseMarker => "__";
-        public string CssClass = "";
 
         public StrongMarkerProcessor(StringProcessor[] subProcessors)
         {

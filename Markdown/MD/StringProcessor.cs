@@ -64,7 +64,7 @@ namespace Markdown.MD
 
         private bool CloseMarkerCollected(char symbol, string inputString)
         {
-            if (!currentMarkerProcessor.CheckOnCloseMarker(symbol, currentCharIndex == inputString.Length - 1))
+            if (!currentMarkerProcessor.CheckOnCloseMarker(ref symbol, currentCharIndex == inputString.Length - 1))
                 return false;
             AddRenderedField(symbol);
             return true;

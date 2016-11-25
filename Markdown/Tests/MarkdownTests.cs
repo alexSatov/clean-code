@@ -42,6 +42,16 @@ namespace Markdown.Tests
         [TestCase("Некорректная [](http://example.net/) _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [](http://example.net/) <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl2")]
         [TestCase("Некорректная [ссылка] http://example.net/ _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [ссылка] http://example.net/ <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl3")]
         [TestCase("Некорректная [ссылка http://example.net/) _не влияет на дальшейшую обработку_", ExpectedResult = "Некорректная [ссылка http://example.net/) <em>не влияет на дальшейшую обработку</em>", TestName = "UncorrectUrl4")]
+
+        [TestCase("Разделение\n\nна\n\nпараграфы\n\n", ExpectedResult = "<p>Разделение</p><p>на</p><p>параграфы</p>", TestName = "CorrectParagraphs")]
+        [TestCase("__Маркеры__\n\nработают\n\n_внутри_\n\nпараграфов", ExpectedResult = "<p><strong>Маркеры</strong></p>" +
+                                                                                        "<p>работают</p>" +
+                                                                                        "<p><em>внутри</em></p>" +
+                                                                                        "параграфов", TestName = "MarkersInsideParagraphs")]
+        [TestCase("Параграфы\n\nотделяются\n2 символами переноса строки", ExpectedResult = "<p>Параграфы</p>отделяются\n2 символами переноса строки", TestName = "TwoLineBreakForParagraph")]
+
+        [TestCase("#Заголовок 1\n##Заголовок 2\n###Заголовок 3\n####Заголовок 4\n#####Заголовок 5\n######Заголовок 6", 
+            ExpectedResult = "<h1>Заголовок 1</h1>\n<h2>Заголовок 2</h2>\n<h3>Заголовок 3</h3>\n<h4>Заголовок 4</h4>\n<h5>Заголовок 5</h5>\n<h6>Заголовок 6</h6>", TestName = "CorrectHeaders")]
         public string ProcessText(string text)
         {
             return markdownProcessor.RenderToHtml(text);

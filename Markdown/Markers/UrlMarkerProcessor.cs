@@ -12,7 +12,6 @@ namespace Markdown.Markers
         public override string OpenMarker => "[";
         public override string CloseMarker => ")";
         public string BaseUrl;
-        public string CssClass = "";
 
         private bool canClose;
         private bool linkExpected;
@@ -22,7 +21,7 @@ namespace Markdown.Markers
             BaseUrl = baseUrl;
         }
 
-        public override bool CheckOnCloseMarker(char symbol, bool isLastSymbol = false)
+        public override bool CheckOnCloseMarker(ref char symbol, bool isLastSymbol = false)
         {
             if (linkExpected)
                 if (!Separators.Contains(symbol) && symbol != '(')

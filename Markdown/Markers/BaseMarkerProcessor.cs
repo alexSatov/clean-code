@@ -9,6 +9,7 @@ namespace Markdown.Markers
         public abstract string OpenMarker { get; }
         public abstract string CloseMarker { get; }
         public string CurrentField => FieldBuilder.ToString();
+        public string CssClass = "";
 
         protected StringBuilder FieldBuilder = new StringBuilder();
         protected StringProcessor[] SubProcessors;
@@ -34,7 +35,7 @@ namespace Markdown.Markers
             return field;
         }
 
-        public virtual bool CheckOnCloseMarker(char symbol, bool isLastSymbol = false)
+        public virtual bool CheckOnCloseMarker(ref char symbol, bool isLastSymbol = false)
         {
             if (IsMarkerSymbol(symbol))
             {
