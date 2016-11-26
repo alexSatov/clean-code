@@ -6,13 +6,17 @@ namespace Markdown.Markers
 {
     public abstract class BaseMarkerProcessor
     {
-        public abstract string Marker { get; }
+        public string CssClass = "";
+        public abstract string OpenMarker { get; }
+        public abstract string CloseMarker { get; }
         public string CurrentField => FieldBuilder.ToString();
 
-        protected StringBuilder FieldBuilder = new StringBuilder();
         protected StringProcessor[] SubProcessors;
+        protected StringBuilder FieldBuilder = new StringBuilder();
+        protected readonly char[] Separators = { ' ', '\t', '\n' };
 
         private string cache = "";
+       
 
         public virtual void ProcessSymbol(char symbol)
         {
@@ -21,7 +25,7 @@ namespace Markdown.Markers
 
         public virtual string GetCompletedField()
         {
-            FieldBuilder.Remove(FieldBuilder.Length - Marker.Length, Marker.Length);
+            FieldBuilder.Remove(FieldBuilder.Length - CloseMarker.Length, CloseMarker.Length);
             var field = CurrentField;
 
             if (SubProcessors != null)
@@ -31,7 +35,7 @@ namespace Markdown.Markers
             return field;
         }
 
-        public bool CheckOnCloseMarker(char symbol, bool isLastSymbol = false)
+        public virtual bool CheckOnCloseMarker(char symbol, bool isLastSymbol = false)
         {
             if (IsMarkerSymbol(symbol))
             {
@@ -46,12 +50,12 @@ namespace Markdown.Markers
                 cache = "";
                 return true;
             }
-
+            
             cache = "";
             return false;
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             FieldBuilder.Clear();
             cache = "";
@@ -59,13 +63,13 @@ namespace Markdown.Markers
 
         private bool IsMarkerSymbol(char symbol)
         {
-            var prevSymbol = FieldBuilder.Length > 0 ? FieldBuilder[FieldBuilder.Length - 1] : '-';
-            return Marker.StartsWith(symbol.ToString()) && prevSymbol != ' ';
+            var prevSymbol = FieldBuilder.Length > 0 ? FieldBuilder[FieldBuilder.Length - 1] : ' ';
+            return CloseMarker.StartsWith(symbol.ToString()) && !Separators.Contains(prevSymbol);
         }
 
         private bool IsCompleteCloseMarker(char symbol, bool isLastSymbol)
         {
-            return (symbol == ' ' || isLastSymbol) && Marker == cache;
+            return (Separators.Contains(symbol) || isLastSymbol) && CloseMarker == cache;
         }
     }
 }

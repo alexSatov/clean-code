@@ -5,7 +5,8 @@ namespace Markdown.Markers
 {
     public class EmMarkerProcessor : BaseMarkerProcessor
     {
-        public override string Marker => "_";
+        public override string OpenMarker => "_";
+        public override string CloseMarker => "_";
 
         public EmMarkerProcessor(StringProcessor[] subProcessors)
         {
@@ -21,7 +22,7 @@ namespace Markdown.Markers
 
         public override string GetCompletedField()
         {
-            return HtmlWrapper.WrapToHtmlTag(base.GetCompletedField(), "<em>");
+            return HtmlWrapper.WrapToHtmlTag(base.GetCompletedField(), "<em>", CssClass);
         }
     }
 }

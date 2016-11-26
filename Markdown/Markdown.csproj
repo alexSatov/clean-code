@@ -47,9 +47,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Markers\BulletedListMarkerProcessor.cs" />
     <Compile Include="Markers\EmMarkerProcessor.cs" />
     <Compile Include="HTML\HtmlWrapper.cs" />
     <Compile Include="Markers\BaseMarkerProcessor.cs" />
+    <Compile Include="Markers\HeaderMarkerProcessor.cs" />
+    <Compile Include="Markers\UrlMarkerProcessor.cs" />
     <Compile Include="MD\StringProcessor.cs" />
     <Compile Include="MD\Md.cs" />
     <Compile Include="Program.cs" />
