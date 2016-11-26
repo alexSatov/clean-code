@@ -6,11 +6,11 @@ using Markdown.Markers;
 
 namespace Markdown.MD
 {
-	public class Md
-	{
-	    private readonly StringProcessor processor;
-	    public string BaseUrl;
-	    public string CssClass;
+    public class Md
+    {
+        private readonly StringProcessor processor;
+        public string BaseUrl;
+        public string CssClass;
 
         public Md(string baseUrl = "", string cssClass = "")
         {
@@ -25,10 +25,10 @@ namespace Markdown.MD
             text = TryDivideTextOnParagraphs(text);
             text = TryProcessCodeBlocks(text);
             return text;
-		}
+        }
 
-	    public string TryDivideTextOnParagraphs(string text)
-	    {
+        public string TryDivideTextOnParagraphs(string text)
+        {
             var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
             var textBuilder = new StringBuilder();
 
@@ -42,39 +42,40 @@ namespace Markdown.MD
             return textBuilder.ToString();
         }
 
-	    public string TryProcessCodeBlocks(string text)
-	    {
+        public string TryProcessCodeBlocks(string text)
+        {
             var textBuilder = new StringBuilder();
             var codeBlockBuilder = new StringBuilder();
             var codeBlockCollecting = false;
 
             var textLines = text.Split('\n').Where(l => l != "").Select(l => l + "\n").ToArray();
-	        if (text.Last() != '\n') textLines[textLines.Length - 1] = textLines.Last().Replace("\n", "");
+            if (text.Last() != '\n') textLines[textLines.Length - 1] = textLines.Last().Replace("\n", "");
 
-	        foreach (var line in textLines)
-	        {
-	            if (line[0] == '\t')
-	                AppendLineToCodeBlock(codeBlockBuilder, line.Substring(1), ref codeBlockCollecting);
+            foreach (var line in textLines)
+            {
+                if (line[0] == '\t')
+                    AppendLineToCodeBlock(codeBlockBuilder, line.Substring(1), ref codeBlockCollecting);
 
-	            else if (line.Substring(0, 4) == "    ")
-	                AppendLineToCodeBlock(codeBlockBuilder, line.Substring(4), ref codeBlockCollecting);
+                else if (line.Substring(0, 4) == "    ")
+                    AppendLineToCodeBlock(codeBlockBuilder, line.Substring(4), ref codeBlockCollecting);
 
-	            else if (codeBlockCollecting)
-	            {
-	                codeBlockCollecting = false;
-	                SetCodeBlockToText(codeBlockBuilder, textBuilder);
+                else if (codeBlockCollecting)
+                {
+                    codeBlockCollecting = false;
+                    SetCodeBlockToText(codeBlockBuilder, textBuilder);
                     textBuilder.Append(line);
                 }
 
-	            else textBuilder.Append(line);
-	        }
+                else textBuilder.Append(line);
+            }
 
             if (codeBlockCollecting) SetCodeBlockToText(codeBlockBuilder, textBuilder);
-	        return textBuilder.ToString();
-	    }
 
-	    public BaseMarkerProcessor[] GetMarkerProcessors()
-	    {
+            return textBuilder.ToString();
+        }
+
+        public BaseMarkerProcessor[] GetMarkerProcessors()
+        {
             return new BaseMarkerProcessor[] {
                 new BulletedListMarkerProcessor('*'), 
                 new BulletedListMarkerProcessor('+'), 
@@ -91,19 +92,19 @@ namespace Markdown.MD
             };
         }
 
-	    private static void AppendLineToCodeBlock(StringBuilder codeBlockBuilder, string line, ref bool codeBlockCollecting )
-	    {
+        private static void AppendLineToCodeBlock(StringBuilder codeBlockBuilder, string line, ref bool codeBlockCollecting )
+        {
             codeBlockCollecting = true;
             codeBlockBuilder.Append(line);
         }
 
-	    private void SetCodeBlockToText(StringBuilder codeBlockBuilder, StringBuilder textBuilder)
-	    {
+        private void SetCodeBlockToText(StringBuilder codeBlockBuilder, StringBuilder textBuilder)
+        {
             textBuilder.Append(HtmlWrapper.WrapToHtmlTag(
                         HtmlWrapper.WrapToHtmlTag(codeBlockBuilder.ToString(), "<code>", CssClass),
                         "<pre>", CssClass));
-	        textBuilder.Append("\n");
-	        codeBlockBuilder.Clear();
-	    }
-	}
+            textBuilder.Append("\n");
+            codeBlockBuilder.Clear();
+        }
+    }
 }
