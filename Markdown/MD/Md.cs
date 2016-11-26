@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Markdown.HTML;
 using Markdown.Markers;
@@ -21,17 +22,56 @@ namespace Markdown.MD
 
         public string RenderToHtml(string text)
         {
-            var paragraphs = text.Split(new []{"\n\n"}, StringSplitOptions.None);
-            var htmlTextBuilder = new StringBuilder();
+            text = TryDivideTextOnParagraphs(text);
+            text = TryProcessCodeBlocks(text);
+            return text;
+		}
+
+	    public string TryDivideTextOnParagraphs(string text)
+	    {
+            var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
+            var textBuilder = new StringBuilder();
 
             if (paragraphs.Length == 1)
                 return processor.Process(text);
 
             for (var i = 0; i < paragraphs.Length - 1; i++)
-                htmlTextBuilder.Append(HtmlWrapper.WrapToHtmlTag(processor.Process(paragraphs[i]), "<p>"));
-            htmlTextBuilder.Append(processor.Process(paragraphs[paragraphs.Length - 1]));
-            return htmlTextBuilder.ToString();
-		}
+                textBuilder.Append(HtmlWrapper.WrapToHtmlTag(processor.Process(paragraphs[i]), "<p>"));
+
+            textBuilder.Append(processor.Process(paragraphs.Last()));
+            return textBuilder.ToString();
+        }
+
+	    public string TryProcessCodeBlocks(string text)
+	    {
+            var textBuilder = new StringBuilder();
+            var codeBlockBuilder = new StringBuilder();
+            var codeBlockCollecting = false;
+
+            var textLines = text.Split('\n').Where(l => l != "").Select(l => l + "\n").ToArray();
+	        if (text.Last() != '\n') textLines[textLines.Length - 1] = textLines.Last().Replace("\n", "");
+
+	        foreach (var line in textLines)
+	        {
+	            if (line[0] == '\t')
+	                AppendLineToCodeBlock(codeBlockBuilder, line.Substring(1), ref codeBlockCollecting);
+
+	            else if (line.Substring(0, 4) == "    ")
+	                AppendLineToCodeBlock(codeBlockBuilder, line.Substring(4), ref codeBlockCollecting);
+
+	            else if (codeBlockCollecting)
+	            {
+	                codeBlockCollecting = false;
+	                SetCodeBlockToText(codeBlockBuilder, textBuilder);
+                    textBuilder.Append(line);
+                }
+
+	            else textBuilder.Append(line);
+	        }
+
+            if (codeBlockCollecting) SetCodeBlockToText(codeBlockBuilder, textBuilder);
+	        return textBuilder.ToString();
+	    }
 
 	    public BaseMarkerProcessor[] GetMarkerProcessors()
 	    {
@@ -50,5 +90,20 @@ namespace Markdown.MD
                 new StrongMarkerProcessor(new StringProcessor(new EmMarkerProcessor {CssClass = CssClass})) {CssClass = CssClass}
             };
         }
+
+	    private static void AppendLineToCodeBlock(StringBuilder codeBlockBuilder, string line, ref bool codeBlockCollecting )
+	    {
+            codeBlockCollecting = true;
+            codeBlockBuilder.Append(line);
+        }
+
+	    private void SetCodeBlockToText(StringBuilder codeBlockBuilder, StringBuilder textBuilder)
+	    {
+            textBuilder.Append(HtmlWrapper.WrapToHtmlTag(
+                        HtmlWrapper.WrapToHtmlTag(codeBlockBuilder.ToString(), "<code>", CssClass),
+                        "<pre>", CssClass));
+	        textBuilder.Append("\n");
+	        codeBlockBuilder.Clear();
+	    }
 	}
 }

@@ -31,8 +31,8 @@ namespace Markdown.Tests
             ExpectedResult = "_ Маркер с пробелом_ после открывающего символа __и до закрывающего __ не работает",
             TestName = "WhitespacesAfterOrBeforeMarkerSymbols")]
 
-        [TestCase("\t_Табуляция_", ExpectedResult = "\t<em>Табуляция</em>", TestName = "TextTabulation")]
-        [TestCase("_Верная_\tтабуляция", ExpectedResult = "<em>Верная</em>\tтабуляция", TestName = "TextCorrectTabulation")]
+        [TestCase("Корректная\t_Табуляция_", ExpectedResult = "Корректная\t<em>Табуляция</em>", TestName = "TextTabulation")]
+        [TestCase("_Корректная_\tтабуляция", ExpectedResult = "<em>Корректная</em>\tтабуляция", TestName = "TextCorrectTabulation")]
         [TestCase("_\tМаркер с табуляцией внутри\t_ не работает", ExpectedResult = "_\tМаркер с табуляцией внутри\t_ не работает", TestName = "TabulationInsideMarker")]
 
         [TestCase("Рабочая [ссылка](http://example.net/)", ExpectedResult = "Рабочая <a href=\"http://example.net/\">ссылка</a>", TestName = "CorrectUrl")]
@@ -59,6 +59,16 @@ namespace Markdown.Tests
         [TestCase("* Red * Green\n* Blue", ExpectedResult = "<ul><li>Red * Green</li><li>Blue</li></ul>", TestName = "MarkerInsideListItem")]
         [TestCase("* Red\n* Green\n* Blue\n", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>\n", TestName = "BreakLineAtTheEndOfLine")]
         [TestCase("* Red\n* Green\n* Blue\nEnd of list", ExpectedResult = "<ul><li>Red</li><li>Green</li><li>Blue</li></ul>\nEnd of list", TestName = "TextAtTheEndOfLine")]
+
+        [TestCase("Here is an example of AppleScript:\n\ttell application \"Foo\"\n\t\tbeep\n\tend tell",
+            ExpectedResult = "Here is an example of AppleScript:\n<pre><code>tell application \"Foo\"\n\tbeep\nend tell</code></pre>\n",
+            TestName = "CodeBlocksWithTabs")]
+        [TestCase("Here is an example of AppleScript:\n    tell application \"Foo\"\n        beep\n    end tell",
+            ExpectedResult = "Here is an example of AppleScript:\n<pre><code>tell application \"Foo\"\n    beep\nend tell</code></pre>\n",
+            TestName = "CodeBlocksWithSpaces")]
+        [TestCase("Start initialization\n\tint a = 1;\nFinish initialization",
+            ExpectedResult = "Start initialization\n<pre><code>int a = 1;\n</code></pre>\nFinish initialization",
+            TestName = "CodeBlocksWithOneLine")]
         public string ProcessText(string text)
         {
             return markdownProcessor.RenderToHtml(text);
